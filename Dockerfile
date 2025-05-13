@@ -1,22 +1,29 @@
-FROM python:3.10-slim
+# Build Stage
+FROM python:3.9 AS build
 
-# Install system dependencies for Python and Node.js
-RUN apt-get update && apt-get install -y python3-pip python3-dev libjpeg-dev nodejs npm
-
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and install Node dependencies
-COPY package*.json ./
-RUN npm install
+# Copy all your project files into the container
+COPY . .
 
-# Copy requirements.txt and install Python dependencies
-COPY requirements.txt ./
-RUN pip3 install -r requirements.txt
+# Install dependencies (this assumes you have a requirements.txt)
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your application code
-COPY . ./
+# Remove unnecessary files after installation (optional)
+RUN rm -rf /root/.cache
 
-EXPOSE 3000
-ENV PORT=3000
+# Production Stage (lighter base image)
+FROM python:3.9-slim
 
-CMD ["node", "server.js"]
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy only the necessary files from the build stage
+COPY --from=build /app /app
+
+# Expose the port that your application runs on (adjust as needed)
+EXPOSE 5000
+
+# Set the entry point or command to run your application (adjust as needed)
+CMD ["python", "app.py"]
