@@ -1,24 +1,26 @@
-# Use a base image with both Node.js and Python
+# Use a base image with Node.js and Python
 FROM node:18-bullseye
 
-# Install Python
+# Install Python and pip
 RUN apt-get update && apt-get install -y python3 python3-pip
 
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
-# Copy files
-COPY . .
-
-# Install Python dependencies
-RUN pip3 install -r requirements.txt
-
-# Install Node dependencies
+# Copy package files and install Node dependencies
+COPY package*.json ./
 RUN npm install
 
-# Expose the port Railway expects
-ENV PORT=5000
-EXPOSE 5000
+# Copy Python requirements and install Python dependencies
+COPY requirements.txt ./
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the app
+COPY . .
+
+# Expose the port (Render/Railway needs this)
+ENV PORT=3000
+EXPOSE 3000
 
 # Start the app
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
