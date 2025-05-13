@@ -4,6 +4,9 @@ FROM python:3.9 AS build
 # Set the working directory inside the container
 WORKDIR /app
 
+# Upgrade pip to the latest version
+RUN pip install --upgrade pip
+
 # Copy all your project files into the container
 COPY . .
 
@@ -18,6 +21,9 @@ FROM python:3.9-slim
 
 # Set the working directory inside the container
 WORKDIR /app
+
+# Upgrade pip in the production stage as well
+RUN pip install --upgrade pip
 
 # Copy only the necessary files from the build stage
 COPY --from=build /app /app
