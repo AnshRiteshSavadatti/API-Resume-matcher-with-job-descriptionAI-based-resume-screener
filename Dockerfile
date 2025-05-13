@@ -1,7 +1,7 @@
-FROM node:18-bullseye
+FROM python:3.10-slim
 
-# Install Python and pip and any system dependencies needed for Python packages
-RUN apt-get update && apt-get install -y python3 python3-pip libjpeg-dev
+# Install system dependencies for Python and Node.js
+RUN apt-get update && apt-get install -y python3-pip python3-dev libjpeg-dev nodejs npm
 
 WORKDIR /app
 
@@ -16,9 +16,7 @@ RUN pip3 install -r requirements.txt
 # Copy the rest of your application code
 COPY . ./
 
-# Expose the port and set the environment variable for PORT
 EXPOSE 3000
 ENV PORT=3000
 
-# Command to run the app
 CMD ["node", "server.js"]
