@@ -5,31 +5,33 @@ FROM python:3.9 AS build
 WORKDIR /app
 
 # Upgrade pip to the latest version
-RUN pip install --upgrade pip
+RUN python -m pip install --upgrade pip
 
-# Copy all your project files into the container
-COPY . .
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
 
-# Install dependencies (this assumes you have a requirements.txt)
+# Install dependencies (this assumes you have a valid requirements.txt)
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Remove unnecessary files after installation (optional)
-RUN rm -rf /root/.cache
+# Copy the rest of the application files
+COPY . .
 
-# Production Stage (lighter base image)
+# Production Stage
 FROM python:3.9-slim
 
 # Set the working directory inside the container
 WORKDIR /app
 
 # Upgrade pip in the production stage as well
-RUN pip install --upgrade pip
+RUN apt-get update && apt-get install -y gcc && \
+    python -m pip install --upgrade pip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy only the necessary files from the build stage
+# Copy everything from the build stage
 COPY --from=build /app /app
 
-# Expose the port that your application runs on (adjust as needed)
+# Expose the port your app uses
 EXPOSE 5000
 
-# Set the entry point or command to run your application (adjust as needed)
+# Run the app
 CMD ["python", "app.py"]
