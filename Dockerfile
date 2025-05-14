@@ -20,11 +20,13 @@ FROM node:18-slim
 
 WORKDIR /app
 
-# Install Python and required system dependencies
+# Install system dependencies and allow pip override
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip gcc && \
+    apt-get install -y gcc && \
     python3 -m pip install --upgrade pip && \
+    pip install --break-system-packages --no-cache-dir --prefer-binary -r requirements.txt && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
 
 # Copy files from the Python build stage
 COPY --from=python-build /app /app
